@@ -1,6 +1,10 @@
 # Data
 *csv
 
+# Personalize activate/deativate scripts
+activate_*
+deactivate_*
+
 # LOG-files
 log
 
