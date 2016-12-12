@@ -1,0 +1,8 @@
+# Data
+*csv
+
+# LOG-files
+log
+
+# Python
+*.pyc
