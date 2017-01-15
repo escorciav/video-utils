@@ -28,7 +28,7 @@ def input_parser():
                    'organization is preserved if relative-path are used.')
     p = argparse.ArgumentParser(description=description)
     p.add_argument('-if', '--input-file', required=True,
-                   help='CSV file with list of videos to process')
+                   help='CSV file with list of videos to process.')
     p.add_argument('-of', '--output-folder', help='Folder to allocate frames')
     p.add_argument('-bf', '--baseformat', default=None,
                    help='Format used for naming frames e.g. %%06d.jpg')
@@ -43,7 +43,7 @@ def input_parser():
 
 
 def main(input_file, output_folder, baseformat, n_jobs, fullpath, video_path):
-    df = pd.read_csv(input_file, sep=' ', header=None)
+    df = pd.read_csv(input_file, sep='\t', header=None)
     Parallel(n_jobs=n_jobs)(delayed(dump_wrapper)(i, output_folder,
                                                   baseformat, fullpath,
                                                   video_path)

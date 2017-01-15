@@ -70,7 +70,12 @@ def get_duration(filename):
            'stream=duration -of default=nokey=1:noprint_wrappers=1 ' +
            filename).split()
     duration_exp = check_output(cmd, universal_newlines=True)
-    return float(duration_exp)
+    duration_exp = duration_exp.rstrip()
+    try:
+        duration = float(duration_exp)
+    except:
+        duration = 0.
+    return duration
 
 
 def get_frame_rate(filename):
@@ -100,11 +105,16 @@ def get_frame_rate(filename):
     frame_rate_exp = check_output(cmd, universal_newlines=True)
     frame_rate_exp = frame_rate_exp.rstrip()
 
-    if '/' in frame_rate_exp:
-        numerator, denominator = frame_rate_exp.split('/')
-        return float(numerator) / float(denominator)
-    else:
-        return float(frame_rate_exp)
+    try:
+        frame_rate = float(frame_rate_exp)
+    except:
+        if frame_rate_exp == 'N/A':
+            frame_rate = 0.
+        else:
+            numerator, denominator = frame_rate_exp.split('/')
+            frame_rate = float(numerator) / float(denominator)
+
+    return frame_rate
 
 
 def get_num_frames(filename, ext='*.jpg'):
