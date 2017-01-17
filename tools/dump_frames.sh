@@ -13,7 +13,8 @@
 video_list="/data/activitynet/v1_2-videos.csv"
 # CSV-file with location for frames (equal number of lines of video_list -> 1 to 1 matching :smile:)
 output_list="/data/activitynet/v1_2-frames.csv"
-# Downsample output
+# Downsample output (leave a space " " at the end of string)
+framerate="-r 5 "   # use "" to keep original frame rate
 downsample="-vf scale=171x128 "
 # Output format
 output_format="%06d.png"
@@ -39,7 +40,7 @@ output_dir="$(sed -n ${SLURM_ARRAY_TASK_ID}p $output_list)"
 mkdir -p $output_dir
 
 # Dump frames
-ffmpeg -v error -i $video_filename -qscale:v 2 ${downsample}-f image2 $output_dir/$output_format
+ffmpeg -v error -i $video_filename -qscale:v 2 ${framerate}${downsample}-f image2 $output_dir/$output_format
 
 # Makes debugging == find token
 if [ $? -eq 0 ]; then
