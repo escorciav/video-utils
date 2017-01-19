@@ -24,7 +24,10 @@ def video_stats(filename):
 
 def input_parse():
     description = 'Get information (duration, frame-rate) of several videos.'
-    p = argparse.ArgumentParser(description=description)
+    epilog = ('This program uses FFPROBE to grab video information. It is '
+              'highly recommended to ensure that frame-rate, num-frames, '
+              'duration correspond among them.')
+    p = argparse.ArgumentParser(description=description, epilog=epilog)
     p.add_argument('-if', '--input-file', required=True,
                    help=('TSV-file with list of videos to process. Remove any '
                          'header or comments. Use "\t" as separator if any.'))
