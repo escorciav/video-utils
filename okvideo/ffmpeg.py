@@ -4,7 +4,8 @@ import os
 import subprocess
 
 
-def dump_frames(filename, output_folder, output_format='%06d.png'):
+def dump_frames(filename, output_folder, output_format='%06d.png',
+                extra_filters=''):
     """Dump frames of a video-file into a folder
 
     Parameters
@@ -13,8 +14,10 @@ def dump_frames(filename, output_folder, output_format='%06d.png'):
         Fullpath of video-file
     output_folder : str
         Fullpath of folder to place frames
-    basename_format: str, optional
+    basename_format : str, optional
         String format used to save video frames.
+    extra_filters : str, optional
+        Additional filters for ffmpeg such as "-vf scale=320x240".
 
     Outputs
     -------
@@ -28,13 +31,14 @@ def dump_frames(filename, output_folder, output_format='%06d.png'):
     """
     if not os.path.isfile(filename):
         raise IOError('Unexistent video {}'.format(filename))
-
     if not os.path.isdir(output_folder):
         os.makedirs(output_folder)
+    if len(extra_filters) > 1 and extra_filters[-1] != ' ':
+        extra_filters += ' '
 
     output_format = os.path.join(output_folder, output_format)
-    cmd = ('ffmpeg -v error -i {} -qscale:v 2 -f image2 {}'.format(
-        filename, output_format)).split()
+    cmd = ('ffmpeg -v error -i {} -qscale:v 2 {}-f image2 {}'.format(
+        filename, extra_filters, output_format)).split()
 
     try:
         out = check_output(cmd, stderr=subprocess.STDOUT)
