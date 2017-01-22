@@ -1,7 +1,10 @@
 name: video-utils
+channels:
+- defaults
+- conda-forge
 dependencies:
-- conda-forge::ffmpeg=2.8.6=2
-- conda-forge::x264=20131217=1
+- ffmpeg=2.8.6=2
+- x264=20131217=1
 - openssl=1.0.2j=0
 - pip=9.0.1=py35_1
 - python=3.5.2=0
