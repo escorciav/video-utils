@@ -1,0 +1,27 @@
+name: video-utils-tools
+channels:
+- conda-forge
+- defaults
+dependencies:
+- certifi=2016.9.26=py35_0
+- ffmpeg=2.8.6=2
+- setuptools=27.2.0=py35_0
+- sqlite=3.13.0=0
+- wheel=0.29.0=py35_0
+- x264=20131217=1
+- xz=5.2.2=0
+- zlib=1.2.8=3
+- joblib=0.9.4=py35_0
+- mkl=11.3.3=0
+- numpy=1.11.2=py35_0
+- openssl=1.0.2j=0
+- pandas=0.19.1=np111py35_0
+- pip=9.0.1=py35_1
+- python=3.5.2=0
+- python-dateutil=2.6.0=py35_0
+- pytz=2016.10=py35_0
+- readline=6.2=2
+- six=1.10.0=py35_0
+- tk=8.5.18=0
+prefix: /home/escorcv/install/bin/miniconda3/envs/video-utils-tools
+
