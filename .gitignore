@@ -2,8 +2,8 @@
 *csv
 
 # Personalize activate/deativate scripts
-activate_*
-deactivate_*
+activate*
+deactivate*
 
 # LOG-files
 log

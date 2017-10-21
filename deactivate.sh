@@ -1,1 +1,2 @@
 source deactivate
+module purge
