@@ -9,4 +9,7 @@ deactivate*
 log
 
 # Python
-*.pyc
+__pycache__/
+
+# VScode
+.vscode

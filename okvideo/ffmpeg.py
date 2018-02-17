@@ -1,8 +1,9 @@
-from subprocess import check_output
+import ast
 import glob
 import logging
 import os
 import subprocess
+from subprocess import check_output
 
 
 def dump_frames(filename, output_format='%06d.jpg', filters='-qscale:v 1'):
@@ -81,6 +82,23 @@ def get_frame_rate(filename):
     return frame_rate
 
 
+def get_metadata(filename):
+    """Return dict with all the metadata from the video
+
+    Args:
+        filename (str): Fullpath of video
+
+    Returns:
+        resolution (tuple)
+
+    """
+    cmd = ('ffprobe -v error -v quiet -print_format json -show_format '
+           '-show_streams ' + filename).split()
+    output_expr = check_output(cmd, universal_newlines=True)
+    metadata = ast.literal_eval(output_expr)
+    return metadata
+
+
 def get_num_frames(filename, ext='*.jpg'):
     """Count number of frames of a video
 
@@ -106,3 +124,21 @@ def get_num_frames(filename, ext='*.jpg'):
         return nframes
     else:
         raise ValueError('Unexpect filename: {}'.format(filename))
+
+
+def get_resolution(filename):
+    """Return resolution of video in terms of width and height
+
+    Args:
+        filename (str): Fullpath of video
+
+    Returns:
+        resolution (tuple)
+
+    """
+    cmd = ('ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries '
+           'stream=height,width ' + filename).split()
+    resolution_exp = check_output(cmd, universal_newlines=True)
+    width = int(resolution_exp.split('width=')[1].split('\n')[0])
+    height = int(resolution_exp.split('height=')[1].split('\n')[0])
+    return (width, height)
