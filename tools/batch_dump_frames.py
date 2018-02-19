@@ -14,18 +14,6 @@ import pandas as pd
 from okvideo.ffmpeg import dump_frames
 
 
-def main(input_file, output_folder, baseformat, filters, n_jobs,
-         fullpath_flag, video_path):
-    df = pd.read_csv(input_file, header=None)
-    if not os.path.isdir(output_folder):
-        os.makedirs(output_folder)
-    Parallel(n_jobs=n_jobs)(
-        delayed(dump_wrapper)(i, output_folder, baseformat, filters,
-                              fullpath_flag, video_path)
-        for i in df.loc[:, 0])
-    return None
-
-
 def dump_wrapper(filename, output_folder, baseformat, filters, fullpath_flag,
                  video_path):
     filename_noext = os.path.splitext(filename)[0]
@@ -40,7 +28,23 @@ def dump_wrapper(filename, output_folder, baseformat, filters, fullpath_flag,
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
     output = os.path.join(output_dir, baseformat)
-    return dump_frames(filename, output, filters)
+    flag = dump_frames(filename, output, filters)
+    return filename_noext, flag
+
+
+def main(input_file, output_dir, output_file, baseformat, filters, n_jobs,
+         fullpath_flag, video_path):
+    df = pd.read_csv(input_file, header=None)
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
+    status = Parallel(n_jobs=n_jobs, verbose=5)(
+        delayed(dump_wrapper)(i, output_dir, baseformat, filters,
+                              fullpath_flag, video_path)
+        for i in df.loc[:, 0])
+
+    with open(output_file, 'w') as fid:
+        for i in status:
+            fid.write('{},{}\n'.format(*i))
 
 
 if __name__ == '__main__':
@@ -49,13 +53,14 @@ if __name__ == '__main__':
                      'organization is preserved if relative-path are used.'))
     p.add_argument('-if', '--input-file', required=True,
                    help='CSV file with list of videos to process.')
-    p.add_argument('-of', '--output-folder', help='Folder to allocate frames')
+    p.add_argument('-od', '--output-dir', help='Folder to allocate frames')
+    p.add_argument('-of', '--output-file', help='CSV with report')
     p.add_argument('-bf', '--baseformat', default='%06d.jpg',
                    help='Format used for naming frames e.g. %%06d.jpg')
     p.add_argument('--filters', default='',
                    help='Filters for ffmpeg')
     # Workers
-    p.add_argument('-n', '--n-jobs', default=1, type=int,
+    p.add_argument('-n', '--n-jobs', default=4, type=int,
                    help='Max number of process')
     # Video path
     p.add_argument('-ff', '--fullpath-flag', action='store_true',
