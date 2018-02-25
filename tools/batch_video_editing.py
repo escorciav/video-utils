@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 
-Python program to edit many videos
+Launch ffmpeg from python to edit multiple videos at the same time
 
 """
 import argparse
@@ -14,14 +14,15 @@ import pandas as pd
 
 def ffmpeg(filename, output_folder, filters, root):
     filename_noext = os.path.splitext(filename)[0]
-    if root:
-        filename = os.path.join(root, filename)
-    output_dir = os.path.join(output_folder, filename_noext)
-    if not os.path.isfile(filename):
-        return filename_noext, False, 'Unexistent file'
+    fstree = os.path.dirname(filename)
+    output_dir = os.path.join(output_folder, fstree)
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
     output = os.path.join(output_dir, filename)
+
+    filename = os.path.join(root, filename)
+    if not os.path.isfile(filename):
+        return filename_noext, False, 'Unexistent file'
 
     cmd = ('ffmpeg -i {} {} {}'.format(filename, filters, output)).split()
     try:
