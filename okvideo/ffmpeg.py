@@ -24,10 +24,10 @@ def dump_frames(filename, output_format='%06d.jpg', filters='-qscale:v 1'):
         filename, filters, output_format).split()
 
     try:
-        out = check_output(cmd, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
+        check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+    except subprocess.CalledProcessError as err:
         logging.debug('Imposible to dump video', filename)
-        logging.debug('Traceback:\n', out)
+        logging.debug('Traceback:\n', err.output)
         return False
     return True
 
