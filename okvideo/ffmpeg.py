@@ -39,14 +39,19 @@ def get_duration(filename):
         filename (str): fullpath of video-file
 
     Returns:
-        frame_rate (float)
+        frame_rate (float or None): duration if seconds. If None, metadata is
+            corrupted.
 
     """
     cmd = ('ffprobe -v 0 -of flat=s=_ -select_streams v:0 -show_entries '
            'stream=duration -of default=nokey=1:noprint_wrappers=1 ' +
            filename).split()
-    duration_exp = check_output(cmd, universal_newlines=True)
-    duration_exp = duration_exp.rstrip()
+    pid = subprocess.run(cmd, universal_newlines=True,
+                         stdout=subprocess.PIPE)
+    if pid.returncode != 0:
+        return None
+
+    duration_exp = pid.stdout.rstrip()
     try:
         duration = float(duration_exp)
     except:
@@ -61,24 +66,30 @@ def get_frame_rate(filename):
         filename (str): Fullpath of video-file
 
     Returns:
-        frame_rate (float)
+        frame_rate (float or None): duration if seconds. If None, metadata is
+            corrupted.
 
     """
     cmd = ('ffprobe -v 0 -of flat=s=_ -select_streams v:0 -show_entries '
            'stream=avg_frame_rate -of default=nokey=1:noprint_wrappers=1 ' +
            filename).split()
-    frame_rate_exp = check_output(cmd, universal_newlines=True)
-    frame_rate_exp = frame_rate_exp.rstrip()
+    pid = subprocess.run(cmd, stdout=subprocess.PIPE,
+                         universal_newlines=True)
+    if pid.returncode != 0:
+        return None
 
+    frame_rate_exp = pid.stdout.rstrip()
     try:
         frame_rate = float(frame_rate_exp)
     except:
         if frame_rate_exp == 'N/A':
             frame_rate = 0.
         else:
-            numerator, denominator = frame_rate_exp.split('/')
-            frame_rate = float(numerator) / float(denominator)
-
+            numerator, denominator = map(float, frame_rate_exp.split('/'))
+            if denominator == 0:
+                frame_rate = 0
+            else:
+                frame_rate = numerator / denominator
     return frame_rate
 
 
@@ -89,7 +100,7 @@ def get_metadata(filename):
         filename (str): Fullpath of video
 
     Returns:
-        resolution (tuple)
+        TODO
 
     """
     cmd = ('ffprobe -v error -v quiet -print_format json -show_format '
@@ -107,7 +118,8 @@ def get_num_frames(filename, ext='*.jpg'):
         ext (str, optional): image extension
 
     Returns:
-        counter (int): number of frames
+        counter (int or None): number of frames. If None, metadata is
+            corrupted.
 
     Raises
         ValueError: unexpected filename
@@ -116,10 +128,14 @@ def get_num_frames(filename, ext='*.jpg'):
     if os.path.isdir(filename):
         return len(glob.glob(os.path.join(filename, ext)))
     elif os.path.isfile(filename):
-        cmd = ('ffprobe -v error -count_frames -select_streams v:0 '
+        cmd = ('ffprobe -v 0 -count_frames -select_streams v:0 '
                '-show_entries stream=nb_read_frames -of '
-               'default=nokey=1:noprint_wrappers=1 ' + filename)
-        nframes_expr = check_output(cmd, universal_newlines=True, shell=True)
+               'default=nokey=1:noprint_wrappers=1 ' + filename).split()
+        pid = subprocess.run(cmd, stdout=subprocess.PIPE,
+                             universal_newlines=True)
+        if pid.returncode != 0:
+            return None
+        nframes_expr = pid.stdout
         nframes = int(nframes_expr.rstrip())
         return nframes
     else:
@@ -133,12 +149,18 @@ def get_resolution(filename):
         filename (str): Fullpath of video
 
     Returns:
-        resolution (tuple)
+        resolution (tuple or None): (width, height). If None, metadata is
+            corrupted.
 
     """
-    cmd = ('ffprobe -v error -of flat=s=_ -select_streams v:0 -show_entries '
+    cmd = ('ffprobe -v 0 -of flat=s=_ -select_streams v:0 -show_entries '
            'stream=height,width ' + filename).split()
-    resolution_exp = check_output(cmd, universal_newlines=True)
+    pid = subprocess.run(cmd, stdout=subprocess.PIPE,
+                         universal_newlines=True)
+    if pid.returncode != 0:
+        return None
+
+    resolution_exp = pid.stdout
     width = int(resolution_exp.split('width=')[1].split('\n')[0])
     height = int(resolution_exp.split('height=')[1].split('\n')[0])
     return (width, height)
