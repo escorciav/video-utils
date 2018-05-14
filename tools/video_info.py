@@ -9,14 +9,17 @@ from okvideo.ffmpeg import (get_duration, get_frame_rate, get_num_frames,
                             get_resolution)
 
 
-def video_stats(filename, video_path):
-    stats = []
-    stats.append(os.path.basename(os.path.splitext(filename)[0]))
-    filename = os.path.join(video_path, filename)
-    stats.append(get_duration(filename))
-    stats.append(get_frame_rate(filename))
-    stats.append(get_num_frames(filename))
-    stats.extend(list(get_resolution(filename)))
+def video_stats(filename, dirname):
+    stats = {}
+    stats['video_name'] = os.path.basename(filename)
+    filename = os.path.join(dirname, filename)
+    stats['duration'] = get_duration(filename))
+    stats['frame_rate'] = get_frame_rate(filename))
+    stats['num_frames'] = get_num_frames(filename))
+    resolution = get_resolution(filename)
+    if resolution is None:
+        resolution = (None, None)
+    stats['weight'], stats['height'] = resolution
     return stats
 
 
@@ -25,9 +28,7 @@ def main(args):
     stats = Parallel(n_jobs=args.n_jobs, verbose=args.verbose)(
         delayed(video_stats)(i, args.root)
         for i in df.loc[:, 0])
-    df_stat = pd.DataFrame(stats,
-                           columns=['video-name', 'duration', 'frame-rate',
-                                    'num-frames', 'width', 'height'])
+    df_stat = pd.DataFrame(stats)
     df_stat.to_csv(args.output_file, index=False)
 
 
