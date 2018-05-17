@@ -21,9 +21,9 @@ def dump_wrapper(filename, dirname, frame_format, filters, root):
         logging.debug('Unexistent file {}'.format(filename))
         return filename_noext, False
     if not frame_dir.is_dir():
-        os.makedirs(frame_dir)
+        os.makedirs(str(frame_dir))
 
-    output = os.path.join(frame_dir, frame_format)
+    output = frame_dir / frame_format
     flag = dump_frames(filename, output, filters)
     return filename_noext, flag
 
@@ -31,7 +31,7 @@ def dump_wrapper(filename, dirname, frame_format, filters, root):
 def main(args):
     df = pd.read_csv(args.input_file, header=None)
     if not args.dirname.is_dir():
-        os.makedirs(args.dirname)
+        os.makedirs(str(args.dirname))
     status = Parallel(n_jobs=args.n_jobs, verbose=args.verbose)(
         delayed(dump_wrapper)(
             i, args.dirname, args.frame_format, args.filters, args.root)
