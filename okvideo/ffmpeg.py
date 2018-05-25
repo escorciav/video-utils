@@ -20,11 +20,22 @@ def dump_frames(filename, output_format='%06d.jpg', filters='-qscale:v 1'):
         success : bool
 
     """
+    # Hack to escape characters
+    ESPECIAL_CHARS = ['@']
+    filename = os.path.join(*filename.parts)
+    output_format = os.path.join(*output_format.parts)
+    if any([i in filename for i in ESPECIAL_CHARS]):
+        for i in ESPECIAL_CHARS:
+            if i in filename:
+                filename = filename.replace(i, '\\' + i)
+            if i in output_format:
+                output_format = output_format.replace(i, '\\' + i)
     cmd = 'ffmpeg -v error -i {} {} {}'.format(
-        filename, filters, output_format).split()
+        filename, filters, output_format)
 
     try:
-        check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+        check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True,
+                     shell=True)
     except subprocess.CalledProcessError as err:
         logging.debug('Imposible to dump video', filename)
         logging.debug('Traceback:\n', err.output)

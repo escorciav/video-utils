@@ -29,6 +29,8 @@ def dump_wrapper(filename, dirname, frame_format, filters, root):
 
 
 def main(args):
+    if len(args.filters) == 0:
+        args.filters = '-vf "fps=5, scale=320:240" -qscale:v 2'
     df = pd.read_csv(args.input_file, header=None)
     if not args.dirname.is_dir():
         os.makedirs(str(args.dirname))
