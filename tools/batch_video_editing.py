@@ -36,6 +36,7 @@ def ffmpeg(filename, output_folder, filters, root):
 
 
 def main(args):
+    args.filters = '-vf scale=320x240'
     logging.info('Editing videos')
     df = pd.read_csv(args.input_file, header=None)
     if not os.path.isdir(args.output_dir):
