@@ -1,3 +1,4 @@
+"Print files that does not have token"
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import glob
 import os
@@ -9,22 +10,7 @@ def get_id(filename):
     return fparts[-1]
 
 
-def input_parser():
-    description = "Print ID of logging files that do not contain a token"
-    p = ArgumentParser(description=description,
-                       formatter_class=ArgumentDefaultsHelpFormatter)
-    p.add_argument('-d', '--logdir', required=True,
-                   help='Path of folder with logging files')
-    p.add_argument('-e', '--ext', default='.out',
-                   help='Extension of logging files')
-    p.add_argument('-t', '--token', default='Successful execution',
-                   help='Token of success')
-    return p
-
-
 def main(logdir, ext, token):
-    """Print files that does not have token
-    """
     if not os.path.isdir(logdir):
         raise 'Unexistent directory {}'.format(logdir)
 
@@ -43,5 +29,13 @@ def main(logdir, ext, token):
 
 
 if __name__ == "__main__":
-    p = input_parser()
+    description = "Print ID of logging files that do not contain a token"
+    p = ArgumentParser(description=description,
+                       formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument('-d', '--logdir', required=True,
+                   help='Path of folder with logging files')
+    p.add_argument('-e', '--ext', default='.out',
+                   help='Extension of logging files')
+    p.add_argument('-t', '--token', default='Successful execution',
+                   help='Token of success')
     main(**vars(p.parse_args()))

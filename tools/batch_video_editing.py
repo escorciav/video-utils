@@ -5,6 +5,7 @@ Launch ffmpeg from python to edit multiple videos at the same time
 
 """
 import argparse
+import logging
 import os
 import subprocess
 
@@ -22,7 +23,7 @@ def ffmpeg(filename, output_folder, filters, root):
 
     filename = os.path.join(root, filename)
     if not os.path.isfile(filename):
-        return filename_noext, False, 'Unexistent file'
+        return filename_noext, False, 'unexistent file'
 
     cmd = ('ffmpeg -i {} {} {}'.format(filename, filters, output)).split()
     try:
@@ -31,20 +32,23 @@ def ffmpeg(filename, output_folder, filters, root):
     except subprocess.CalledProcessError as err:
         msg = err.stdout.split('\n')[-2]
         return filename_noext, False, msg
-    return filename_noext, True, 'Done'
+    return filename_noext, True, 'success'
 
 
-def main(input_file, output_dir, output_file, filters, n_jobs, root):
-    df = pd.read_csv(input_file, header=None)
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-    status = Parallel(n_jobs=n_jobs, verbose=3)(
-        delayed(ffmpeg)(i, output_dir, filters, root)
+def main(args):
+    logging.info('Editing videos')
+    df = pd.read_csv(args.input_file, header=None)
+    if not os.path.isdir(args.output_dir):
+        os.makedirs(args.output_dir)
+    status = Parallel(n_jobs=args.n_jobs, verbose=args.verbose)(
+        delayed(ffmpeg)(i, args.output_dir, args.filters, args.root)
         for i in df.loc[:, 0])
 
-    with open(output_file, 'w') as fid:
+    logging.info('Dumping report')
+    with open(args.output_file, 'w') as fid:
         for i in status:
             fid.write('{},{},{}\n'.format(*i))
+    logging.info('Succesful execution')
 
 
 if __name__ == '__main__':
@@ -63,6 +67,19 @@ if __name__ == '__main__':
     # Root folder
     p.add_argument('-r', '--root', default='',
                    help='Path where the videos are located.')
+    p.add_argument('-v', '--verbose', default=5, type=int,
+                   help='verbosity joblib')
+    # Logging
+    p.add_argument('-log', '--loglevel', default='INFO',
+                   help='verbosity level')
     args = p.parse_args()
 
-    main(**vars(args))
+    numeric_level = getattr(logging, args.loglevel.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.loglevel)
+    logging.basicConfig(
+        format=('%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d]: '
+                '%(message)s'),
+        level=numeric_level)
+
+    main(args)

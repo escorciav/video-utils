@@ -29,6 +29,7 @@ def dump_wrapper(filename, dirname, frame_format, filters, root):
 
 
 def main(args):
+    logging.info('Dumping frames')
     df = pd.read_csv(args.input_file, header=None)
     if not args.dirname.is_dir():
         os.makedirs(str(args.dirname))
@@ -36,10 +37,12 @@ def main(args):
         delayed(dump_wrapper)(
             i, args.dirname, args.frame_format, args.filters, args.root)
         for i in df.loc[:, 0])
+    logging.info('Dumping report')
 
     with open(args.summary, 'w') as fid:
         for i in status:
             fid.write('{},{}\n'.format(*i))
+    logging.info('Succesful execution')
 
 
 if __name__ == '__main__':
