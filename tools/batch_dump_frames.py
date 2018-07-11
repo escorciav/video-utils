@@ -22,6 +22,10 @@ def dump_wrapper(filename, dirname, frame_format, filters, root):
         return filename_noext, False
     if not frame_dir.is_dir():
         os.makedirs(str(frame_dir))
+    else:
+        filename = frame_dir / frame_format.format(1)
+        if filename.is_file():
+            return filename_noext, True
 
     output = frame_dir / frame_format
     flag = dump_frames(filename, output, filters)
@@ -30,15 +34,22 @@ def dump_wrapper(filename, dirname, frame_format, filters, root):
 
 def main(args):
     if len(args.filters) == 0:
-        args.filters = '-vf "fps=5, scale=320:240" -qscale:v 2'
+        args.filters = (f'-vf "fps=5, scale={args.width}:{args.height}" '
+                        f'-qscale:v 2')
+    logging.info(args)
     df = pd.read_csv(args.input_file, header=None)
+    logging.info(f'Loaded input file {args.input_file} with {len(df)} videos')
     if not args.dirname.is_dir():
+        logging.info(f'Creating directory {args.dirname}...')
         os.makedirs(str(args.dirname))
+
+    logging.info('Dumping frames...')
     status = Parallel(n_jobs=args.n_jobs, verbose=args.verbose)(
         delayed(dump_wrapper)(
             i, args.dirname, args.frame_format, args.filters, args.root)
         for i in df.loc[:, 0])
 
+    logging.info('Creating summary file...')
     with open(args.summary, 'w') as fid:
         for i in status:
             fid.write('{},{}\n'.format(*i))
@@ -59,8 +70,12 @@ if __name__ == '__main__':
                    help='Filters for ffmpeg')
     p.add_argument('-r', '--root', type=Path, default=Path('rng-vg-nfmf'),
                    help='Path where the videos are located.')
+    p.add_argument('--width', default=320,
+                   help='Frame width (only valid for empty filters)')
+    p.add_argument('--height', default=240,
+                   help='Frame heigth (only valid for empty filters)')
     # Workers
-    p.add_argument('-n', '--n-jobs', default=4, type=int,
+    p.add_argument('-n', '--n-jobs', default=-1, type=int,
                    help='Max number of process')
     # Logging
     p.add_argument('--verbose', type=int, default=0,
