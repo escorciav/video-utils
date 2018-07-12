@@ -11,7 +11,8 @@ from okvideo.ffmpeg import dump_frames
 
 
 def dump_wrapper(filename, dirname, frame_format, filters, root):
-    filename_noext = os.path.splitext(filename)[0]
+    # filename_noext = os.path.splitext(filename)[0]
+    filename_noext = filename
     if root.is_dir():
         filename = root / filename
     else:
