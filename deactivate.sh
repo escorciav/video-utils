@@ -1,2 +1,0 @@
-source deactivate
-module purge
