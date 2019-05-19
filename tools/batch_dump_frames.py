@@ -82,7 +82,7 @@ if __name__ == '__main__':
     p.add_argument('--fps', default=5,
                    help='FPS for frame extraction')
     # Workers
-    p.add_argument('-n', '--n-jobs', default=-1, type=int,
+    p.add_argument('-n', '--n-jobs', default=1, type=int,
                    help='Max number of process')
     # Logging
     p.add_argument('--verbose', type=int, default=0,
