@@ -21,10 +21,11 @@ def dump_frames(filename, output_format='%06d.jpg', filters='-qscale:v 1'):
 
     """
     cmd = 'ffmpeg -v error -i {} {} {}'.format(
-        filename, filters, output_format).split()
+        filename, filters, output_format)
 
     try:
-        check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+        check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True,
+                     shell=True)
     except subprocess.CalledProcessError as err:
         logging.debug('Imposible to dump video', filename)
         logging.debug('Traceback:\n', err.output)
