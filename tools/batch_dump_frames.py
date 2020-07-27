@@ -3,14 +3,22 @@ import argparse
 import logging
 import os
 from pathlib import Path
+from pprint import pformat
 
 from joblib import Parallel, delayed
 import pandas as pd
 
-from okvideo.ffmpeg import dump_frames
+try:
+    from okvideo.ffmpeg import dump_frames
+except:
+    import sys
+    filename = Path(os.getcwd()).joinpath(__file__)
+    project_dir = filename.parents[1]
+    sys.path.append(str(project_dir))
+    from okvideo.ffmpeg import dump_frames
 
 
-def dump_wrapper(filename, dirname, frame_format, filters, root):
+def dump_wrapper(filename, dirname, frame_format, filters, ext):
     filename_noext = os.path.splitext(filename)[0]
     if root.is_dir():
         filename = root / filename
@@ -29,16 +37,19 @@ def dump_wrapper(filename, dirname, frame_format, filters, root):
 
     output = frame_dir / frame_format
     flag = dump_frames(filename, output, filters)
-    return filename_noext, flag
+    num_frames = None
+    if flag:
+        num_frames = len(list(frame_dir.glob(f'*{ext}')))
+    return filename_noext, flag, num_frames
 
 
 def main(args):
     logging.info('Dumping frames')
+    logging.info(f'Arguments:\n{pformat(vars(args))}')
     if len(args.filters) == 0:
         args.filters = (f'-vf "fps={args.fps}, '
                         f'scale={args.width}:{args.height}" '
                         f'-qscale:v 2')
-    logging.info(args)
     df = pd.read_csv(args.input_file, header=None)
     logging.info(f'Loaded input file {args.input_file} with {len(df)} videos')
     if not args.dirname.is_dir():
@@ -46,16 +57,20 @@ def main(args):
         os.makedirs(str(args.dirname))
 
     logging.info('Dumping frames...')
+    ext = Path(args.frame_format).suffix
     status = Parallel(n_jobs=args.n_jobs, verbose=args.verbose)(
         delayed(dump_wrapper)(
-            i, args.dirname, args.frame_format, args.filters, args.root)
-        for i in df.loc[:, 0])
+            i, args.dirname, args.frame_format, args.filters, args.root, ext
+        )
+        for i in df.loc[:, 0]
+    )
     logging.info('Dumping report')
 
     logging.info('Creating summary file...')
     with open(args.summary, 'w') as fid:
+        fid.write('path,successful_frame_extraction,num_frames\n')
         for i in status:
-            fid.write('{},{}\n'.format(*i))
+            fid.write('{},{},{}\n'.format(*i))
     logging.info('Succesful execution')
 
 
